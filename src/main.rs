@@ -120,8 +120,7 @@ fn find_mount<P: AsRef<Path>>(path: P) -> result::Result<Option<MountEntry>, mnt
                 if entry.spec.starts_with("/") && entry.spec == spec {
                     mount_entry = Some(entry.clone());
                     file_len = usize::MAX;
-                }
-                if path.as_ref().starts_with(&entry.file) {
+                } else if path.as_ref().starts_with(&entry.file) {
                     let tmp_file_len = entry.file.as_path().to_string_lossy().len();
                     if tmp_file_len > file_len {
                         mount_entry = Some(entry.clone());
@@ -202,7 +201,7 @@ fn calculate_format_max_lens(format_entries: &[FormatEntry]) -> FormatMaxLengths
         max_lens.max_total_len = max(max_lens.max_total_len, format_entry.total.chars().fold(0, |x, _| x + 1));
         max_lens.max_used_len = max(max_lens.max_used_len, format_entry.used.chars().fold(0, |x, _| x + 1));
         max_lens.max_available_len = max(max_lens.max_available_len, format_entry.available.chars().fold(0, |x, _| x + 1));
-        max_lens.max_capacity_len = max(max_lens.max_file_system_len, format_entry.capacity.chars().fold(0, |x, _| x + 1));
+        max_lens.max_capacity_len = max(max_lens.max_capacity_len, format_entry.capacity.chars().fold(0, |x, _| x + 1));
         max_lens.max_mount_point_len = max(max_lens.max_mount_point_len, format_entry.mount_point.chars().fold(0, |x, _| x + 1));
     }
     max_lens
