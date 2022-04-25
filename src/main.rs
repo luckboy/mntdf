@@ -56,7 +56,7 @@ struct FormatMaxLengths
 }
 
 #[allow(dead_code)]
-struct StatVFs
+struct StatVFS
 {
     bsize: u64,
     frsize: u64,
@@ -71,13 +71,13 @@ struct StatVFs
     namemax: u64,
 }
 
-fn statvfs<P: AsRef<Path>>(path: P) -> Result<StatVFs>
+fn statvfs<P: AsRef<Path>>(path: P) -> Result<StatVFS>
 {
     let path_cstring = CString::new(path.as_ref().as_os_str().as_bytes()).unwrap();
     let mut statvfs_buf: libc::statvfs = unsafe { MaybeUninit::uninit().assume_init() };
     let res = unsafe { libc::statvfs(path_cstring.as_ptr(), &mut statvfs_buf as *mut libc::statvfs) };
     if res != -1 {
-        Ok(StatVFs {
+        Ok(StatVFS {
                 bsize: statvfs_buf.f_bsize as u64,
                 frsize: statvfs_buf.f_frsize as u64,
                 blocks: statvfs_buf.f_blocks as u64,
