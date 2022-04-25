@@ -58,17 +58,17 @@ struct FormatMaxLengths
 #[allow(dead_code)]
 struct StatVFS
 {
-    bsize: u64,
-    frsize: u64,
+    bsize: usize,
+    frsize: usize,
     blocks: u64,
     bfree: u64,
     bavail: u64,
     files: u64,
     ffree: u64,
     favail: u64,
-    fsid: u64,
-    flag: u64,
-    namemax: u64,
+    fsid: usize,
+    flag: usize,
+    namemax: usize,
 }
 
 fn statvfs<P: AsRef<Path>>(path: P) -> Result<StatVFS>
@@ -78,17 +78,17 @@ fn statvfs<P: AsRef<Path>>(path: P) -> Result<StatVFS>
     let res = unsafe { libc::statvfs(path_cstring.as_ptr(), &mut statvfs_buf as *mut libc::statvfs) };
     if res != -1 {
         Ok(StatVFS {
-                bsize: statvfs_buf.f_bsize as u64,
-                frsize: statvfs_buf.f_frsize as u64,
+                bsize: statvfs_buf.f_bsize as usize,
+                frsize: statvfs_buf.f_frsize as usize,
                 blocks: statvfs_buf.f_blocks as u64,
                 bfree: statvfs_buf.f_bfree as u64,
                 bavail: statvfs_buf.f_bavail as u64,
                 files: statvfs_buf.f_files as u64,
                 ffree: statvfs_buf.f_ffree as u64,
                 favail: statvfs_buf.f_favail as u64,
-                fsid: statvfs_buf.f_fsid as u64,
-                flag: statvfs_buf.f_flag as u64,
-                namemax: statvfs_buf.f_namemax as u64,
+                fsid: statvfs_buf.f_fsid as usize,
+                flag: statvfs_buf.f_flag as usize,
+                namemax: statvfs_buf.f_namemax as usize,
         })
     } else {
         Err(Error::last_os_error())
@@ -163,9 +163,9 @@ fn mount_entry_to_format_entry(mount_entry: &MountEntry, opts: &Options, is_vfs:
                     String::from("0%")
                 };
                 let file_system = mount_entry.spec.clone();
-                let total = format!("{}", (total_blocks * statvfs.frsize + unit_size - 1) / unit_size);
-                let used = format!("{}", (used_blocks * statvfs.frsize + unit_size - 1) / unit_size);
-                let available = format!("{}", (available_blocks * statvfs.frsize) / unit_size);
+                let total = format!("{}", (total_blocks * statvfs.frsize as u64 + unit_size - 1) / unit_size);
+                let used = format!("{}", (used_blocks * statvfs.frsize as u64 + unit_size - 1) / unit_size);
+                let available = format!("{}", (available_blocks * statvfs.frsize as u64) / unit_size);
                 let mount_point = format!("{}", mount_entry.file.as_path().to_string_lossy());
                 Some(Some(FormatEntry {
                         file_system,
