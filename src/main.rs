@@ -1,6 +1,6 @@
 //
 // Mntdf - Df program with mnt crate. 
-// Copyright (C) 2022 Łukasz Szpakowski
+// Copyright (C) 2022-2023 Łukasz Szpakowski
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -74,21 +74,21 @@ struct StatVFS
 fn statvfs<P: AsRef<Path>>(path: P) -> Result<StatVFS>
 {
     let path_cstring = CString::new(path.as_ref().as_os_str().as_bytes()).unwrap();
-    let mut statvfs_buf: libc::statvfs = unsafe { MaybeUninit::uninit().assume_init() };
-    let res = unsafe { libc::statvfs(path_cstring.as_ptr(), &mut statvfs_buf as *mut libc::statvfs) };
+    let mut statvfs_buf: MaybeUninit<libc::statvfs> = MaybeUninit::uninit();
+    let res = unsafe { libc::statvfs(path_cstring.as_ptr(), statvfs_buf.assume_init_mut() as *mut libc::statvfs) };
     if res != -1 {
         Ok(StatVFS {
-                bsize: statvfs_buf.f_bsize as usize,
-                frsize: statvfs_buf.f_frsize as usize,
-                blocks: statvfs_buf.f_blocks as u64,
-                bfree: statvfs_buf.f_bfree as u64,
-                bavail: statvfs_buf.f_bavail as u64,
-                files: statvfs_buf.f_files as u64,
-                ffree: statvfs_buf.f_ffree as u64,
-                favail: statvfs_buf.f_favail as u64,
-                fsid: statvfs_buf.f_fsid as usize,
-                flag: statvfs_buf.f_flag as usize,
-                namemax: statvfs_buf.f_namemax as usize,
+                bsize: unsafe { statvfs_buf.assume_init_ref() }.f_bsize as usize,
+                frsize: unsafe { statvfs_buf.assume_init_ref() }.f_frsize as usize,
+                blocks: unsafe { statvfs_buf.assume_init_ref() }.f_blocks as u64,
+                bfree: unsafe { statvfs_buf.assume_init_ref() }.f_bfree as u64,
+                bavail: unsafe { statvfs_buf.assume_init_ref() }.f_bavail as u64,
+                files: unsafe { statvfs_buf.assume_init_ref() }.f_files as u64,
+                ffree: unsafe { statvfs_buf.assume_init_ref() }.f_ffree as u64,
+                favail: unsafe { statvfs_buf.assume_init_ref() }.f_favail as u64,
+                fsid: unsafe { statvfs_buf.assume_init_ref() }.f_fsid as usize,
+                flag: unsafe { statvfs_buf.assume_init_ref() }.f_flag as usize,
+                namemax: unsafe { statvfs_buf.assume_init_ref() }.f_namemax as usize,
         })
     } else {
         Err(Error::last_os_error())
